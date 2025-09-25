@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
             skills: document.getElementById('form-skills'),
             workExperience: document.getElementById('form-experience'),
             education: document.getElementById('form-education'),
+            projects: document.getElementById('form-projects'),
+            certifications: document.getElementById('form-certifications'),
         }
     };
 
@@ -40,10 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.dropZone.addEventListener('click', () => elements.fileInput.click());
     elements.fileInput.addEventListener('change', handleFileSelect);
     elements.changeFileBtn.addEventListener('click', () => {
-        elements.fileInput.value = ''; // Reset file input
+        elements.fileInput.value = ''; 
         elements.uploadIcon.classList.remove('hidden');
         elements.uploadText.classList.remove('hidden');
         elements.fileInfo.classList.add('hidden');
+        elements.formSection.classList.add('hidden');
         hideAllMessages();
     });
     elements.clearFormBtn.addEventListener('click', clearForm);
@@ -89,8 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function uploadAndProcess(file) {
-        // --- UI State Management (FIXED) ---
-        // This ensures the UI correctly shows the loader and hides other elements.
         hideAllMessages();
         elements.loaderContainer.classList.remove('hidden');
         elements.formSection.classList.add('hidden');
@@ -99,13 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('resume', file);
         
-        const steps = [
-            'Uploading file...',
-            'Extracting text content...',
-            'Analyzing with AI...',
-            'Parsing structured data...',
-            'Finalizing results...'
-        ];
+        const steps = ['Uploading file...','Extracting text content...','Analyzing with AI...','Parsing structured data...','Finalizing results...'];
         let stepIndex = 0;
         elements.processingStep.textContent = steps[stepIndex];
         const stepInterval = setInterval(() => {
@@ -131,34 +126,40 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Upload Failed:', error);
             showError(error.message);
         } finally {
-            // This 'finally' block GUARANTEES the loader is hidden.
             clearInterval(stepInterval);
             elements.loaderContainer.classList.add('hidden');
         }
     }
 
     function autofillForm(data) {
+        const separator = '\n\n---\n\n';
+
         for (const [key, field] of Object.entries(elements.formFields)) {
-            if (!field || !data[key]) continue;
+            if (!field || data[key] === undefined || data[key] === null) continue;
 
             let value = data[key];
+            
             if (Array.isArray(value)) {
                 if (key === 'skills') {
                     value = value.join(', ');
                 } else if (key === 'workExperience') {
-                    value = value.map(job => 
-                        `Title: ${job.title || 'N/A'}\nCompany: ${job.company || 'N/A'}\nDates: ${job.dates || 'N/A'}\nDescription: ${job.description || 'N/A'}`
-                    ).join('\n\n---\n\n');
+                    value = value.map(job => `Title: ${job.title || 'N/A'}\nCompany: ${job.company || 'N/A'}\nDates: ${job.dates || 'N/A'}\nDescription: ${job.description || 'N/A'}`).join(separator);
                 } else if (key === 'education') {
-                    value = value.map(edu => 
-                        `Institution: ${edu.institution || 'N/A'}\nDegree: ${edu.degree || 'N/A'}\nDates: ${edu.dates || 'N/A'}`
-                    ).join('\n\n---\n\n');
+                    value = value.map(edu => `Institution: ${edu.institution || 'N/A'}\nDegree: ${edu.degree || 'N/A'}\nDates: ${edu.dates || 'N/A'}`).join(separator);
+                } else if (key === 'projects') {
+                     value = value.map(proj => `Project: ${proj.name || 'N/A'}\nDescription: ${proj.description || 'N/A'}`).join(separator);
+                } else if (key === 'certifications') {
+                    value = value.map(cert => `Certification: ${cert.name || 'N/A'}\nOrganization: ${cert.issuingOrganization || 'N/A'}\nDate: ${cert.date || 'N/A'}`).join(separator);
                 }
             }
             
             if (value && String(value).trim() !== '') {
-                field.value = value;
+                field.value = String(value);
                 field.classList.add('autofilled');
+                if (field.tagName === 'TEXTAREA') {
+                    field.style.height = 'auto';
+                    field.style.height = (field.scrollHeight) + 'px';
+                }
             }
         }
     }
@@ -166,17 +167,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearForm() {
         elements.jobForm.reset();
         document.querySelectorAll('.autofilled').forEach(el => el.classList.remove('autofilled'));
+        document.querySelectorAll('textarea').forEach(el => {
+            el.style.height = 'auto';
+        });
     }
 
     function showSuccess(data) {
         const confidence = data.confidence || 0;
-        let confidenceColor = 'text-red-600';
-        if (confidence >= 80) confidenceColor = 'text-green-600';
-        else if (confidence >= 50) confidenceColor = 'text-yellow-600';
-        
         const scoreElement = document.getElementById('confidence-score');
         scoreElement.textContent = `${confidence}%`;
-        scoreElement.className = `font-bold ${confidenceColor}`;
+        scoreElement.className = `font-bold ${confidence >= 80 ? 'text-green-600' : confidence >= 50 ? 'text-yellow-600' : 'text-red-600'}`;
         
         elements.successMessage.classList.remove('hidden');
         elements.formSection.classList.remove('hidden');
@@ -197,4 +197,3 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('🎉 Application Submitted Successfully! (This is a demo)');
     }
 });
-

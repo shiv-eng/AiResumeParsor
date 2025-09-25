@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Resume Parser - Advanced Autofill</title>
+    <title>AI Resume Parser - High Accuracy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,16 +22,13 @@
 
     <div class="max-w-6xl mx-auto space-y-8">
         
-        <!-- Header -->
         <header class="text-center">
             <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 mb-2">AI Resume Parser</h1>
             <p class="text-lg text-gray-600">Instantly extract and autofill candidate data with world-class accuracy.</p>
         </header>
 
-        <!-- Main Content -->
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            <!-- Left Column: Upload & Feedback -->
             <div class="space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-lg">
                     <h2 class="text-xl font-bold text-gray-900 border-b pb-3 mb-4">1. Upload Resume</h2>
@@ -80,100 +77,46 @@
                 </div>
             </div>
 
-            <!-- Right Column: Form -->
             <div id="form-section" class="bg-white p-6 rounded-2xl shadow-lg hidden">
                 <form id="job-application-form" class="space-y-6">
                     <h2 class="text-xl font-bold text-gray-900 border-b pb-3 mb-4">2. Review Extracted Data</h2>
 
-                    <!-- Personal Information -->
                     <fieldset class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                            <label for="form-firstname" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                            <input type="text" id="form-firstname" class="form-input w-full rounded-md" required>
-                        </div>
-                        <div>
-                            <label for="form-lastname" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                            <input type="text" id="form-lastname" class="form-input w-full rounded-md" required>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label for="form-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" id="form-email" class="form-input w-full rounded-md" required>
-                        </div>
-                        <div>
-                            <label for="form-phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                            <input type="tel" id="form-phone" class="form-input w-full rounded-md">
-                        </div>
-                        <div>
-                            <label for="form-location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                            <input type="text" id="form-location" class="form-input w-full rounded-md" placeholder="e.g., City, Country">
-                        </div>
+                        <div><label for="form-firstname" class="block text-sm font-medium text-gray-700 mb-1">First Name</label><input type="text" id="form-firstname" class="form-input w-full rounded-md" required></div>
+                        <div><label for="form-lastname" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label><input type="text" id="form-lastname" class="form-input w-full rounded-md" required></div>
+                        <div class="sm:col-span-2"><label for="form-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="form-email" class="form-input w-full rounded-md" required></div>
+                        <div><label for="form-phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="tel" id="form-phone" class="form-input w-full rounded-md"></div>
+                        <div><label for="form-location" class="block text-sm font-medium text-gray-700 mb-1">Location</label><input type="text" id="form-location" class="form-input w-full rounded-md" placeholder="e.g., City, Country"></div>
                     </fieldset>
 
-                    <!-- Professional Links -->
                     <fieldset class="space-y-5">
-                        <div>
-                            <label for="form-headline" class="block text-sm font-medium text-gray-700 mb-1">Professional Headline</label>
-                            <input type="text" id="form-headline" class="form-input w-full rounded-md">
-                        </div>
+                        <div><label for="form-headline" class="block text-sm font-medium text-gray-700 mb-1">Professional Headline</label><input type="text" id="form-headline" class="form-input w-full rounded-md"></div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
-                                <label for="form-linkedin" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile URL</label>
-                                <input type="url" id="form-linkedin" class="form-input w-full rounded-md">
-                            </div>
-                            <div>
-                                <label for="form-github" class="block text-sm font-medium text-gray-700 mb-1">GitHub Profile URL</label>
-                                <input type="url" id="form-github" class="form-input w-full rounded-md">
-                            </div>
-                            <div>
-                                <label for="form-portfolio" class="block text-sm font-medium text-gray-700 mb-1">Portfolio/Website URL</label>
-                                <input type="url" id="form-portfolio" class="form-input w-full rounded-md">
-                            </div>
-                            <div>
-                                <label for="form-leetcode" class="block text-sm font-medium text-gray-700 mb-1">LeetCode Profile URL</label>
-                                <input type="url" id="form-leetcode" class="form-input w-full rounded-md">
-                            </div>
-                             <div>
-                                <label for="form-youtube" class="block text-sm font-medium text-gray-700 mb-1">YouTube Channel URL</label>
-                                <input type="url" id="form-youtube" class="form-input w-full rounded-md">
-                            </div>
+                            <div><label for="form-linkedin" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile URL</label><input type="url" id="form-linkedin" class="form-input w-full rounded-md"></div>
+                            <div><label for="form-github" class="block text-sm font-medium text-gray-700 mb-1">GitHub Profile URL</label><input type="url" id="form-github" class="form-input w-full rounded-md"></div>
+                            <div><label for="form-portfolio" class="block text-sm font-medium text-gray-700 mb-1">Portfolio/Website URL</label><input type="url" id="form-portfolio" class="form-input w-full rounded-md"></div>
+                            <div><label for="form-leetcode" class="block text-sm font-medium text-gray-700 mb-1">LeetCode Profile URL</label><input type="url" id="form-leetcode" class="form-input w-full rounded-md"></div>
+                            <div><label for="form-youtube" class="block text-sm font-medium text-gray-700 mb-1">YouTube Channel URL</label><input type="url" id="form-youtube" class="form-input w-full rounded-md"></div>
                         </div>
                     </fieldset>
                     
-                    <!-- Text Areas -->
                     <fieldset class="space-y-5">
-                        <div>
-                            <label for="form-summary" class="block text-sm font-medium text-gray-700 mb-1">Professional Summary</label>
-                            <textarea id="form-summary" rows="4" class="form-input w-full rounded-md resize-y"></textarea>
-                        </div>
-                         <div>
-                            <label for="form-skills" class="block text-sm font-medium text-gray-700 mb-1">Skills</label>
-                            <textarea id="form-skills" rows="3" class="form-input w-full rounded-md resize-y"></textarea>
-                        </div>
-                        <div>
-                            <label for="form-experience" class="block text-sm font-medium text-gray-700 mb-1">Work Experience</label>
-                            <textarea id="form-experience" rows="6" class="form-input w-full rounded-md resize-y"></textarea>
-                        </div>
-                        <div>
-                            <label for="form-education" class="block text-sm font-medium text-gray-700 mb-1">Education</label>
-                            <textarea id="form-education" rows="4" class="form-input w-full rounded-md resize-y"></textarea>
-                        </div>
+                        <div><label for="form-summary" class="block text-sm font-medium text-gray-700 mb-1">Professional Summary</label><textarea id="form-summary" rows="4" class="form-input w-full rounded-md resize-y"></textarea></div>
+                        <div><label for="form-skills" class="block text-sm font-medium text-gray-700 mb-1">Skills</label><textarea id="form-skills" rows="3" class="form-input w-full rounded-md resize-y"></textarea></div>
+                        <div><label for="form-experience" class="block text-sm font-medium text-gray-700 mb-1">Work Experience</label><textarea id="form-experience" rows="6" class="form-input w-full rounded-md resize-y"></textarea></div>
+                        <div><label for="form-education" class="block text-sm font-medium text-gray-700 mb-1">Education</label><textarea id="form-education" rows="4" class="form-input w-full rounded-md resize-y"></textarea></div>
+                        <div><label for="form-projects" class="block text-sm font-medium text-gray-700 mb-1">Projects</label><textarea id="form-projects" rows="5" class="form-input w-full rounded-md resize-y"></textarea></div>
+                        <div><label for="form-certifications" class="block text-sm font-medium text-gray-700 mb-1">Certifications</label><textarea id="form-certifications" rows="3" class="form-input w-full rounded-md resize-y"></textarea></div>
                     </fieldset>
 
-                    <!-- Actions -->
                     <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-2">
-                        <button type="button" id="clear-form-btn" class="w-full sm:w-auto px-5 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Clear Form
-                        </button>
-                        <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 shadow">
-                            Submit Application
-                        </button>
+                        <button type="button" id="clear-form-btn" class="w-full sm:w-auto px-5 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Clear Form</button>
+                        <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 shadow">Submit Application</button>
                     </div>
                 </form>
             </div>
         </main>
     </div>
-
     <script src="./js/main.js"></script>
 </body>
 </html>
-
