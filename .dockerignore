@@ -1,0 +1,23 @@
+# Exclude dependencies, as they are handled inside the Dockerfile
+node_modules
+
+# Exclude environment variables file
+.env
+
+# Exclude logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Exclude IDE / Editor specific files
+.idea
+.vscode
+*.suo
+.ntvs
+*.njsproj
+*.sln
+*.sw?
+
+# Exclude the Dockerfile itself
+Dockerfile
+.dockerignore

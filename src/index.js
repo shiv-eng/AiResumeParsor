@@ -12,15 +12,33 @@ const { extractDataWithGemini } = require('./services/geminiService');
 const app = express();
 const PORT = process.env.PORT || 5050;
 
+// --- API Key Authentication Middleware ---
+const API_KEY = process.env.API_KEY;
+
+if (!API_KEY) {
+    throw new Error("FATAL ERROR: API_KEY is not set in the .env file. The application cannot start.");
+}
+
+const authenticateKey = (req, res, next) => {
+    const providedKey = req.headers['x-api-key'];
+    if (providedKey && providedKey === API_KEY) {
+        next(); // Key is valid, proceed
+    } else {
+        res.status(401).json({ error: 'Unauthorized: A valid x-api-key header is required.' });
+    }
+};
+
 app.use(cors());
-app.use(helmet({ contentSecurityPolicy: false })); // Simplified for local dev
+app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
-app.use(express.static(path.join(__dirname, '../public')));
+
+// The /upload endpoint is now the core product and must be secured
+app.use('/upload', authenticateKey); 
 
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file limit
   fileFilter: (req, file, cb) => {
     const allowedMimes = [ 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/png', 'image/jpeg' ];
     if (allowedMimes.includes(file.mimetype)) {
@@ -31,35 +49,44 @@ const upload = multer({
   },
 }).single("resume");
 
+// --- UPDATED Sanitize Function for Professional Schema ---
 function sanitizeData(data) {
     const schema = {
         firstname: "", lastname: "", email: "", phone: "", location: "", headline: "",
         linkedin: "", github: "", portfolio: "", leetcode: "", youtube: "", summary: "",
-        skills: [], workExperience: [], education: [], projects: [], certifications: [],
+        skills: { languages: [], frameworks_libraries: [], databases: [], cloud_devops: [], tools: [] },
+        workExperience: [], education: [], projects: [], certifications: [],
         confidence: 0
     };
 
-    const sanitized = {};
+    const sanitized = { ...schema }; // Start with a clean schema structure
+
+    if (!data) return sanitized;
+
     for (const key in schema) {
-        const schemaDefault = schema[key];
-        const aiValue = data ? data[key] : undefined;
-        sanitized[key] = schemaDefault;
-        if (aiValue !== undefined && aiValue !== null) {
-            if (Array.isArray(schemaDefault) && Array.isArray(aiValue)) {
-                sanitized[key] = aiValue;
-            } else if (typeof aiValue === typeof schemaDefault) {
-                sanitized[key] = aiValue;
+        if (key === 'confidence' || data[key] === undefined || data[key] === null) continue;
+
+        if (key === 'skills') {
+            // Sanitize the nested skills object
+            for (const category in schema.skills) {
+                if (Array.isArray(data.skills?.[category])) {
+                    sanitized.skills[category] = data.skills[category];
+                }
             }
+        } else if (Array.isArray(schema[key]) && Array.isArray(data[key])) {
+            sanitized[key] = data[key];
+        } else if (typeof data[key] === typeof schema[key]) {
+            sanitized[key] = data[key];
         }
     }
     
-    // --- Stricter Confidence Score ---
+    // --- Professional Confidence Score ---
     let score = 0;
-    if (sanitized.firstname && sanitized.lastname) score += 30; // Critical
-    if (sanitized.email) score += 30; // Critical
-    if (sanitized.phone) score += 20; // Critical
-    if (sanitized.workExperience.length > 0) score += 10;
-    if (sanitized.skills.length > 0) score += 5;
+    if (sanitized.firstname && sanitized.lastname) score += 25;
+    if (sanitized.email) score += 25;
+    if (sanitized.phone) score += 15;
+    if (sanitized.workExperience.length > 0) score += 20;
+    if (Object.values(sanitized.skills).some(arr => arr.length > 0)) score += 10;
     if (sanitized.education.length > 0) score += 5;
     
     sanitized.confidence = Math.min(100, score);
@@ -74,23 +101,16 @@ app.post("/upload", (req, res) => {
 
     try {
       const processedText = await processFile(req.file);
+      if (!processedText || processedText.trim().length < 50) {
+          return res.status(422).json({ error: "Could not extract sufficient text from the document. It may be empty or unreadable." });
+      }
+
       const rawExtractedData = await extractDataWithGemini(processedText);
       const extractedData = sanitizeData(rawExtractedData);
 
       console.log("\n--- ✅ Resume Extraction Successful ---\n");
-      const displayData = {
-          "Name": `${extractedData.firstname || 'Not Found'} ${extractedData.lastname || ''}`,
-          "Email": extractedData.email || "Not Found",
-          "Phone": extractedData.phone || "Not Found",
-          "LinkedIn": extractedData.linkedin || "Not Found",
-          "GitHub": extractedData.github || "Not Found",
-          "Work Experience": `${extractedData.workExperience.length} positions`,
-          "Confidence Score": `${extractedData.confidence}%`
-      };
-      console.table(displayData);
-      console.log("\n---------------------------------------\n");
-
       res.status(200).json(extractedData);
+
     } catch (error) {
         console.error("[Server Error]", error);
         res.status(500).json({ error: error.message || "An unknown error occurred on the server." });
@@ -99,5 +119,6 @@ app.post("/upload", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server is running on http://localhost:${PORT}`);
+  console.log(`✅ AI Resume Parser API is running on http://localhost:${PORT}`);
+  console.log(`🔒 The /upload endpoint is protected by an API key.`);
 });

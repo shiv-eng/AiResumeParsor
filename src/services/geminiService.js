@@ -13,78 +13,116 @@ const safetySettings = [
   { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
 ];
 
+// --- PROFESSIONAL-GRADE SCHEMA ---
+// This schema is more granular, providing structured data that is easier
+// for clients to store and query in a database.
+const professionalSchema = {
+    type: "OBJECT",
+    properties: {
+        firstname: { type: "STRING" },
+        lastname: { type: "STRING" },
+        email: { type: "STRING" },
+        phone: { type: "STRING" },
+        headline: { type: "STRING" },
+        location: { type: "STRING" },
+        linkedin: { type: "STRING" },
+        github: { type: "STRING" },
+        portfolio: { type: "STRING" },
+        leetcode: { type: "STRING" },
+        youtube: { type: "STRING" },
+        summary: { type: "STRING" },
+        skills: {
+            type: "OBJECT",
+            description: "Categorized skills for better filtering and search.",
+            properties: {
+                languages: { type: "ARRAY", items: { type: "STRING" } },
+                frameworks_libraries: { type: "ARRAY", items: { type: "STRING" } },
+                databases: { type: "ARRAY", items: { type: "STRING" } },
+                cloud_devops: { type: "ARRAY", items: { type: "STRING" } },
+                tools: { type: "ARRAY", items: { type: "STRING" } },
+            }
+        },
+        workExperience: {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    company: { type: "STRING" },
+                    title: { type: "STRING" },
+                    startDate: { type: "STRING", description: "The start date in YYYY-MM format" },
+                    endDate: { type: "STRING", description: "The end date in YYYY-MM format, or 'Present'" },
+                    description: { type: "STRING" },
+                },
+                required: ["company", "title", "startDate"]
+            }
+        },
+        education: {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    institution: { type: "STRING" },
+                    degree: { type: "STRING" },
+                    startDate: { type: "STRING", description: "The start date in YYYY-MM format" },
+                    endDate: { type: "STRING", description: "The end date in YYYY-MM format or graduation year (YYYY)" },
+                },
+                required: ["institution", "degree"]
+            }
+        },
+        projects: {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    name: { type: "STRING" },
+                    description: { type: "STRING" },
+                },
+                required: ["name"]
+            }
+        },
+        certifications: {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    name: { type: "STRING" },
+                    issuingOrganization: { type: "STRING" },
+                    date: { type: "STRING", description: "The date of issue in YYYY-MM format" },
+                },
+                required: ["name"]
+            }
+        },
+    },
+};
+
 const model = genAI.getGenerativeModel({
     model: "gemini-1.5-pro-latest",
     safetySettings,
-    // --- THE DEFINITIVE FIX: "Analyze, Extract, and Verify" System Instruction ---
-    // This multi-stage process dramatically improves reliability and accuracy.
-    systemInstruction: `You are an elite resume data extraction engine. Your task is to convert unstructured resume text into a perfect JSON object. You will follow a strict three-stage process: Analyze, Extract, and Verify.
+    systemInstruction: `You are an elite resume data extraction engine. Your task is to convert unstructured resume text into a perfect JSON object based on the provided schema. You will follow a strict three-stage process: Analyze, Extract, and Verify.
 
     **Stage 1: Analyze the Document Structure**
-    - First, mentally map out the resume. Identify the key sections: the header with contact info, the summary, the work experience, skills, education, and projects. Understand the layout before you begin extracting. Some resumes are multi-column; be aware of this.
+    - First, mentally map out the resume. Identify the key sections: contact info, summary, work experience, skills, education, and projects. Understand the layout before you begin extracting.
 
     **Stage 2: Extract Data with High Precision**
-    - **Header Information (Top Priority):**
-        - Find the candidate's **Full Name**. It's almost always the most prominent text. Split it into \`firstname\` and \`lastname\`.
-        - Find the **Email Address**. It will contain an "@" symbol.
-        - Find the **Phone Number**. It's a series of digits, possibly with dashes, spaces, or parentheses.
-        - Scan aggressively for URLs. Find **LinkedIn** ("linkedin.com") and **GitHub** ("github.com") links. These are critical.
-    - **Body Information:**
-        - **Work Experience:** This is the most important section. For EACH job, create a separate object. Extract the \`company\`, \`title\`, \`dates\` of employment, and the \`description\` of responsibilities. Do NOT merge different jobs into one description.
-        - **Skills:** Find the section listing technologies, languages, or tools and extract every single one into the \`skills\` array.
-        - **Education & Projects:** Methodically extract each entry into its respective array of objects.
-
+    - **Contact Info:** Find the candidate's Full Name (split into \`firstname\` and \`lastname\`), Email, Phone, and URLs for LinkedIn and GitHub.
+    - **Skills:** Find the skills section. Do not just list them; you MUST categorize them into the appropriate fields: \`languages\`, \`frameworks_libraries\`, \`databases\`, \`cloud_devops\`, and \`tools\`.
+    - **Work Experience & Education:** For EACH entry, create a separate object. Extract the \`company\`/\`institution\`, \`title\`/\`degree\`, and the dates. You MUST format dates as "YYYY-MM". If only a year is given, use YYYY-01. For the current job, the endDate should be "Present".
+    
     **Stage 3: Verify Your Own Work (Self-Correction)**
     - Before you output the JSON, you MUST perform a self-correction check. Ask yourself:
-        - "Is the \`firstname\` or \`email\` field empty?" If so, I have failed. I must re-scan the text to find it. It is there.
-        - "Does a 'Senior Developer' resume have an empty \`workExperience\` array?" This is a logical contradiction. I must find the work history.
-        - "Is my final output a single, clean JSON object starting with \`{\` and ending with \`}\`?" Yes, it must be. I will not add any extra text or markdown.
+        - "Is the \`firstname\` or \`email\` field empty?" If so, I have failed. I must re-scan the text to find it.
+        - "Is my final output a single, clean JSON object starting with \`{\` and ending with \`}\`?" Yes, it must be. I will not add any extra text, comments, or markdown.
 
     Your final output MUST be only the JSON object, adhering strictly to the schema. Your reputation for 100% accuracy depends on it.`,
 });
 
 const generationConfig = {
     responseMimeType: "application/json",
-    temperature: 0.0, // Set to 0 for maximum determinism and consistency
-    responseSchema: {
-        type: "OBJECT",
-        properties: {
-            firstname: { type: "STRING" }, lastname: { type: "STRING" },
-            email: { type: "STRING" }, phone: { type: "STRING" },
-            headline: { type: "STRING" }, location: { type: "STRING" },
-            linkedin: { type: "STRING" }, github: { type: "STRING" },
-            portfolio: { type: "STRING" }, leetcode: { type: "STRING" },
-            youtube: { type: "STRING" }, summary: { type: "STRING" },
-            skills: { type: "ARRAY", items: { type: "STRING" } },
-            workExperience: {
-                type: "ARRAY", items: { type: "OBJECT", properties: {
-                        company: { type: "STRING" }, title: { type: "STRING" },
-                        dates: { type: "STRING" }, description: { type: "STRING" },
-                    }, required: ["company", "title", "dates"] } },
-            education: {
-                type: "ARRAY", items: { type: "OBJECT", properties: {
-                        institution: { type: "STRING" }, degree: { type: "STRING" }, dates: { type: "STRING" },
-                    }, required: ["institution", "degree"] } },
-            projects: {
-                type: "ARRAY", items: { type: "OBJECT", properties: {
-                        name: { type: "STRING" }, description: { type: "STRING" },
-                    }, required: ["name"] } },
-            certifications: {
-                type: "ARRAY", items: { type: "OBJECT", properties: {
-                        name: { type: "STRING" }, issuingOrganization: { type: "STRING" }, date: { type: "STRING" },
-                    }, required: ["name"] } },
-        },
-    },
+    temperature: 0.0,
+    responseSchema: professionalSchema,
 };
 
-/**
- * --- BULLETPROOF PARSING FUNCTION V2 ---
- * Finds and parses a JSON object from a string, no matter what extra text or markdown surrounds it.
- * @param {string} text The raw response text from the AI model.
- * @returns {object} The parsed JSON object.
- */
 function extractJsonFromText(text) {
-    // Find the first '{' and the last '}' to isolate the JSON object
     const startIndex = text.indexOf('{');
     const endIndex = text.lastIndexOf('}');
 
@@ -114,13 +152,11 @@ async function extractDataWithGemini(text) {
     console.log("Received raw response from Gemini.");
 
     try {
-        // Use the robust parsing function to guarantee a valid JSON object
         const parsedJson = extractJsonFromText(responseText);
         console.log("Successfully parsed JSON from response.");
         return parsedJson;
     } catch (e) {
         console.error("CRITICAL: Failed to extract and parse JSON from Gemini response.", "Error:", e.message, "Raw Response:", responseText);
-        // Provide a clear error message to the frontend
         throw new Error("The AI model returned a response that could not be read. Please try again.");
     }
 }
