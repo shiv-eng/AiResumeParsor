@@ -6,16 +6,13 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// List of models to try in order of preference (updated for AI Studio)
+// List of models to try (avoiding the problematic ones)
 const MODEL_NAMES = [
-    "gemini-1.5-flash",
-    "gemini-1.5-pro", 
-    "gemini-pro",
-    "gemini-1.0-pro-latest",
-    "gemini-1.0-pro",
-    "models/gemini-pro",
-    "models/gemini-1.5-flash",
-    "models/gemini-1.5-pro"
+    "gemini-pro", // Older stable model
+    "gemini-1.0-pro", // Older version
+    "models/gemini-pro", // Alternative path
+    "gemini-1.5-flash", // Try anyway as backup
+    "gemini-1.5-pro"
 ];
 
 async function extractDataWithGemini(text) {
