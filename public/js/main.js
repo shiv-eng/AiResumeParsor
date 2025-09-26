@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Element Cache ---
     const elements = {
         dropZone: document.getElementById('drop-zone'),
         fileInput: document.getElementById('resumeFile'),
@@ -38,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Event Listeners ---
     elements.dropZone.addEventListener('click', () => elements.fileInput.click());
     elements.fileInput.addEventListener('change', handleFileSelect);
     elements.changeFileBtn.addEventListener('click', () => {
@@ -70,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Functions ---
     function preventDefaults(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -111,7 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 900);
 
         try {
-            const response = await fetch('/upload', { method: 'POST', body: formData });
+            const response = await fetch('https://airesumeparsor.onrender.com/upload', {
+                method: 'POST',
+                headers: {
+                    'x-api-key': 'a4a7b9a2-4a7b-4d4b-8f3e-8c3b0a7b9a2d'
+                },
+                body: formData
+            });
             
             if (!response.ok) {
                 const errorData = await response.json();
@@ -140,9 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let value = data[key];
             
             if (Array.isArray(value)) {
-                if (key === 'skills') {
-                    value = value.join(', ');
-                } else if (key === 'workExperience') {
+                if (key === 'workExperience') {
                     value = value.map(job => `Title: ${job.title || 'N/A'}\nCompany: ${job.company || 'N/A'}\nDates: ${job.dates || 'N/A'}\nDescription: ${job.description || 'N/A'}`).join(separator);
                 } else if (key === 'education') {
                     value = value.map(edu => `Institution: ${edu.institution || 'N/A'}\nDegree: ${edu.degree || 'N/A'}\nDates: ${edu.dates || 'N/A'}`).join(separator);
@@ -151,6 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (key === 'certifications') {
                     value = value.map(cert => `Certification: ${cert.name || 'N/A'}\nOrganization: ${cert.issuingOrganization || 'N/A'}\nDate: ${cert.date || 'N/A'}`).join(separator);
                 }
+            } else if (typeof value === 'object' && key === 'skills') {
+                const allSkills = [
+                    ...(value.languages || []),
+                    ...(value.frameworks_libraries || []),
+                    ...(value.databases || []),
+                    ...(value.cloud_devops || []),
+                    ...(value.tools || [])
+                ];
+                value = allSkills.join(', ');
             }
             
             if (value && String(value).trim() !== '') {

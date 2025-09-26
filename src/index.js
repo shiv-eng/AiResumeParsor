@@ -74,17 +74,16 @@ function sanitizeData(data) {
         confidence: 0
     };
 
-    const sanitized = { ...schema }; // Start with a clean schema structure
+    const sanitized = { ...schema };
 
     if (!data) return sanitized;
 
     for (const key in schema) {
         if (key === 'confidence' || data[key] === undefined || data[key] === null) continue;
 
-        if (key === 'skills') {
-            // Sanitize the nested skills object
+        if (key === 'skills' && typeof data.skills === 'object' && data.skills !== null) {
             for (const category in schema.skills) {
-                if (Array.isArray(data.skills?.[category])) {
+                if (Array.isArray(data.skills[category])) {
                     sanitized.skills[category] = data.skills[category];
                 }
             }
