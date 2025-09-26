@@ -111,16 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 900);
 
         try {
-            // **MODIFIED PART**
-            // The '/upload' endpoint now needs your API key in the headers
-            const response = await fetch('https://airesumeparsor.onrender.com/upload', {
-                method: 'POST',
-                headers: {
-                    'x-api-key': 'a4a7b9a2-4a7b-4d4b-8f3e-8c3b0a7b9a2d'
-                },
-                body: formData
-            });
-            // **END OF MODIFIED PART**
+            const response = await fetch('/upload', { method: 'POST', body: formData });
             
             if (!response.ok) {
                 const errorData = await response.json();
@@ -150,14 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (Array.isArray(value)) {
                 if (key === 'skills') {
-                    // Flattening the skills object into a single string
-                    const allSkills = [];
-                    for (const category in value) {
-                        if (Array.isArray(value[category])) {
-                            allSkills.push(...value[category]);
-                        }
-                    }
-                    value = allSkills.join(', ');
+                    value = value.join(', ');
                 } else if (key === 'workExperience') {
                     value = value.map(job => `Title: ${job.title || 'N/A'}\nCompany: ${job.company || 'N/A'}\nDates: ${job.dates || 'N/A'}\nDescription: ${job.description || 'N/A'}`).join(separator);
                 } else if (key === 'education') {
