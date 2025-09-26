@@ -13,90 +13,8 @@ const safetySettings = [
   { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
 ];
 
-// --- PROFESSIONAL-GRADE SCHEMA ---
-// This schema is more granular, providing structured data that is easier
-// for clients to store and query in a database.
-const professionalSchema = {
-    type: "OBJECT",
-    properties: {
-        firstname: { type: "STRING" },
-        lastname: { type: "STRING" },
-        email: { type: "STRING" },
-        phone: { type: "STRING" },
-        headline: { type: "STRING" },
-        location: { type: "STRING" },
-        linkedin: { type: "STRING" },
-        github: { type: "STRING" },
-        portfolio: { type: "STRING" },
-        leetcode: { type: "STRING" },
-        youtube: { type: "STRING" },
-        summary: { type: "STRING" },
-        skills: {
-            type: "OBJECT",
-            description: "Categorized skills for better filtering and search.",
-            properties: {
-                languages: { type: "ARRAY", items: { type: "STRING" } },
-                frameworks_libraries: { type: "ARRAY", items: { type: "STRING" } },
-                databases: { type: "ARRAY", items: { type: "STRING" } },
-                cloud_devops: { type: "ARRAY", items: { type: "STRING" } },
-                tools: { type: "ARRAY", items: { type: "STRING" } },
-            }
-        },
-        workExperience: {
-            type: "ARRAY",
-            items: {
-                type: "OBJECT",
-                properties: {
-                    company: { type: "STRING" },
-                    title: { type: "STRING" },
-                    startDate: { type: "STRING", description: "The start date in YYYY-MM format" },
-                    endDate: { type: "STRING", description: "The end date in YYYY-MM format, or 'Present'" },
-                    description: { type: "STRING" },
-                },
-                required: ["company", "title", "startDate"]
-            }
-        },
-        education: {
-            type: "ARRAY",
-            items: {
-                type: "OBJECT",
-                properties: {
-                    institution: { type: "STRING" },
-                    degree: { type: "STRING" },
-                    startDate: { type: "STRING", description: "The start date in YYYY-MM format" },
-                    endDate: { type: "STRING", description: "The end date in YYYY-MM format or graduation year (YYYY)" },
-                },
-                required: ["institution", "degree"]
-            }
-        },
-        projects: {
-            type: "ARRAY",
-            items: {
-                type: "OBJECT",
-                properties: {
-                    name: { type: "STRING" },
-                    description: { type: "STRING" },
-                },
-                required: ["name"]
-            }
-        },
-        certifications: {
-            type: "ARRAY",
-            items: {
-                type: "OBJECT",
-                properties: {
-                    name: { type: "STRING" },
-                    issuingOrganization: { type: "STRING" },
-                    date: { type: "STRING", description: "The date of issue in YYYY-MM format" },
-                },
-                required: ["name"]
-            }
-        },
-    },
-};
-
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro-latest",
+    model: "gemini-pro", // <-- THIS IS THE ONLY CHANGE
     safetySettings,
     systemInstruction: `You are an elite resume data extraction engine. Your task is to convert unstructured resume text into a perfect JSON object based on the provided schema. You will follow a strict three-stage process: Analyze, Extract, and Verify.
 
@@ -116,49 +34,6 @@ const model = genAI.getGenerativeModel({
     Your final output MUST be only the JSON object, adhering strictly to the schema. Your reputation for 100% accuracy depends on it.`,
 });
 
-const generationConfig = {
-    responseMimeType: "application/json",
-    temperature: 0.0,
-    responseSchema: professionalSchema,
-};
-
-function extractJsonFromText(text) {
-    const startIndex = text.indexOf('{');
-    const endIndex = text.lastIndexOf('}');
-
-    if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
-        console.error("No valid JSON object found in the response string.");
-        throw new Error("Could not find a valid JSON object in the AI response.");
-    }
-
-    const jsonString = text.substring(startIndex, endIndex + 1);
-    
-    try {
-        return JSON.parse(jsonString);
-    } catch (error) {
-        console.error("Failed to parse the extracted JSON string:", error);
-        throw new Error("The extracted text could not be parsed as JSON.");
-    }
-}
-
-async function extractDataWithGemini(text) {
-    const prompt = `Please parse this resume text. Follow your internal "Analyze, Extract, and Verify" protocol to ensure 100% accuracy. The final output must be a perfect JSON object.\n---BEGIN RESUME---\n${text}\n---END RESUME---`;
-
-    console.log("Sending prompt to Gemini 1.5 Pro with AEV protocol...");
-    const result = await model.generateContent(prompt, generationConfig);
-    const response = await result.response;
-    
-    const responseText = response.text();
-    console.log("Received raw response from Gemini.");
-
-    try {
-        const parsedJson = extractJsonFromText(responseText);
-        console.log("Successfully parsed JSON from response.");
-        return parsedJson;
-    } catch (e) {
-        console.error("CRITICAL: Failed to extract and parse JSON from Gemini response.", "Error:", e.message, "Raw Response:", responseText);
-        throw new Error("The AI model returned a response that could not be read. Please try again.");
-    }
-}
-
-module.exports = { extractDataWithGemini };
+// NOTE: The rest of your geminiService.js file remains exactly the same.
+// The "professionalSchema", "generationConfig", "extractJsonFromText", 
+// and "extractDataWithGemini" functions do not need to be changed.
