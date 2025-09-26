@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
 
 if (!process.env.GEMINI_API_KEY) {
     throw new Error("FATAL ERROR: GEMINI_API_KEY is not set in the .env file or environment variables.");
@@ -6,9 +6,28 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Use the stable 'gemini-pro' model
+// --- Model Configuration ---
+// Use the latest powerful model and configure safety settings
 const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
+    model: "gemini-1.5-pro-latest",
+    safetySettings: [
+        {
+            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+        {
+            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+        {
+            category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+        {
+            category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+    ],
 });
 
 async function extractDataWithGemini(text) {
@@ -17,9 +36,14 @@ async function extractDataWithGemini(text) {
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
+        
+        // Add a check to see if the response was blocked
+        if (!response.text) {
+             throw new Error("The response from the AI was blocked, likely due to safety settings or lack of content.");
+        }
+        
         const responseText = response.text();
         
-        // Helper function to find and parse JSON from the response
         const startIndex = responseText.indexOf('{');
         const endIndex = responseText.lastIndexOf('}');
         if (startIndex === -1 || endIndex === -1) {
@@ -30,7 +54,6 @@ async function extractDataWithGemini(text) {
         return JSON.parse(jsonString);
 
     } catch (error) {
-        // Log the detailed error and throw a more informative message
         console.error("Detailed error during Gemini API call:", error);
         throw new Error(`AI model error: ${error.message}`);
     }
