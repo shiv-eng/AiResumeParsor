@@ -6,12 +6,10 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- Model Configuration ---
-// Specify the model and the location to ensure availability
+// Use the stable and universally available 'gemini-pro' model.
+// This is the most reliable choice for standard API keys.
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash-latest",
-}, {
-    location: "us-central1" // This is the critical line
+    model: "gemini-pro",
 });
 
 async function extractDataWithGemini(text) {
@@ -20,25 +18,22 @@ async function extractDataWithGemini(text) {
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        
-        if (!response.text) {
-             throw new Error("The response from the AI was blocked or empty.");
-        }
-        
         const responseText = response.text();
         
         const startIndex = responseText.indexOf('{');
         const endIndex = responseText.lastIndexOf('}');
+
         if (startIndex === -1 || endIndex === -1) {
             console.error("Invalid AI Response Text:", responseText);
             throw new Error("Could not find a valid JSON object in the AI response.");
         }
+
         const jsonString = responseText.substring(startIndex, endIndex + 1);
         return JSON.parse(jsonString);
 
     } catch (error) {
-        console.error("Detailed error during Gemini API call:", error);
-        throw new Error(`AI model error: ${error.message}`);
+        console.error("Detailed error during Gemini API call:", error.message);
+        throw new Error("The AI model could not be reached. Please check your API key and Google Cloud Project permissions.");
     }
 }
 
