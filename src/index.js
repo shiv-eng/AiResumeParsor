@@ -28,7 +28,22 @@ const authenticateKey = (req, res, next) => {
     }
 };
 
-app.use(cors());
+// --- CORS Configuration ---
+// Only allow requests from your specific Netlify frontend
+const allowedOrigins = ['https://magnificent-biscuit-2dcac7.netlify.app'];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  optionsSuccessStatus: 200 
+};
+
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
