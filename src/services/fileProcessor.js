@@ -24,6 +24,7 @@ async function processFile(file) {
         text = buffer.toString("utf8");
     } else if (['image/png', 'image/jpeg'].includes(mimetype)) {
         const preprocessedImage = await preprocessImage(buffer);
+        console.log("Starting OCR process on pre-processed image...");
         const { data: { text: ocrText } } = await Tesseract.recognize(preprocessedImage, "eng");
         text = ocrText;
         console.log("OCR process finished.");
