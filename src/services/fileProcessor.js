@@ -17,8 +17,6 @@ async function processFile(file) {
     if (mimetype === 'application/pdf') {
         const data = await pdfParse(buffer);
         text = data.text;
-        // If the PDF is a scanned image, pdf-parse will return very little text.
-        // The service will still work, but the quality will depend on the PDF type.
     } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         const { value } = await mammoth.extractRawText({ buffer });
         text = value;
@@ -26,7 +24,6 @@ async function processFile(file) {
         text = buffer.toString("utf8");
     } else if (['image/png', 'image/jpeg'].includes(mimetype)) {
         const preprocessedImage = await preprocessImage(buffer);
-        console.log("Starting OCR process on pre-processed image...");
         const { data: { text: ocrText } } = await Tesseract.recognize(preprocessedImage, "eng");
         text = ocrText;
         console.log("OCR process finished.");
