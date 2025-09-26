@@ -8,9 +8,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Explicitly use the stable 'v1' API version with the 'gemini-pro' model
 const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-}, { apiVersion: 'v1' });
-
+    model: "gemini-1.5-flash-latest",
+});
 
 async function extractDataWithGemini(text) {
     const prompt = `You are an elite resume data extraction engine. Convert the following resume text into a perfect JSON object. Your response MUST be only the clean JSON object, starting with { and ending with }, with no extra text, comments, or markdown. \n---BEGIN RESUME---\n${text}\n---END RESUME---`;
