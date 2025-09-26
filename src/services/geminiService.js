@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 if (!process.env.GEMINI_API_KEY) {
     throw new Error("FATAL ERROR: GEMINI_API_KEY is not set in the .env file or environment variables.");
@@ -7,27 +7,11 @@ if (!process.env.GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // --- Model Configuration ---
-// Use the latest powerful model and configure safety settings
+// Specify the model and the location to ensure availability
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro-latest",
-    safetySettings: [
-        {
-            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-        {
-            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-        {
-            category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-        {
-            category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-            threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-    ],
+    model: "gemini-1.5-flash-latest",
+}, {
+    location: "us-central1" // This is the critical line
 });
 
 async function extractDataWithGemini(text) {
@@ -37,9 +21,8 @@ async function extractDataWithGemini(text) {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         
-        // Add a check to see if the response was blocked
         if (!response.text) {
-             throw new Error("The response from the AI was blocked, likely due to safety settings or lack of content.");
+             throw new Error("The response from the AI was blocked or empty.");
         }
         
         const responseText = response.text();
