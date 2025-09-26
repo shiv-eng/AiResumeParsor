@@ -6,9 +6,9 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Explicitly use the stable 'v1' API version with the 'gemini-pro' model
+// Use the stable 'gemini-pro' model
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash-latest",
+    model: "gemini-pro",
 });
 
 async function extractDataWithGemini(text) {
@@ -30,8 +30,9 @@ async function extractDataWithGemini(text) {
         return JSON.parse(jsonString);
 
     } catch (error) {
-        console.error("Error during Gemini API call:", error);
-        throw new Error("Failed to get a response from the AI model.");
+        // Log the detailed error and throw a more informative message
+        console.error("Detailed error during Gemini API call:", error);
+        throw new Error(`AI model error: ${error.message}`);
     }
 }
 
