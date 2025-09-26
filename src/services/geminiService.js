@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 if (!process.env.GEMINI_API_KEY) {
     throw new Error("FATAL ERROR: GEMINI_API_KEY is not set in the .env file or environment variables.");
@@ -6,7 +6,7 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- THE FIX: Explicitly use the stable 'v1' API version ---
+// Explicitly use the stable 'v1' API version with the 'gemini-pro' model
 const model = genAI.getGenerativeModel({
     model: "gemini-pro",
 }, { apiVersion: 'v1' });
@@ -32,7 +32,6 @@ async function extractDataWithGemini(text) {
 
     } catch (error) {
         console.error("Error during Gemini API call:", error);
-        // Re-throw the error to be caught by the main handler in index.js
         throw new Error("Failed to get a response from the AI model.");
     }
 }

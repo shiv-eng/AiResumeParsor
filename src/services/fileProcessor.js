@@ -17,6 +17,8 @@ async function processFile(file) {
     if (mimetype === 'application/pdf') {
         const data = await pdfParse(buffer);
         text = data.text;
+        // If the PDF is a scanned image, pdf-parse will return very little text.
+        // The service will still work, but the quality will depend on the PDF type.
     } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         const { value } = await mammoth.extractRawText({ buffer });
         text = value;
